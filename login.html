@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login | Truck Dashboard</title>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<style>
+@import url('https://fonts.googleapis.com/css?family=Poppins:400,500,600,700&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
+html,body{display:grid;height:100%;width:100%;place-items:center;background:-webkit-linear-gradient(left,#003366,#004080,#0059b3,#0073e6);}
+.wrapper{overflow:hidden;max-width:390px;background:#fff;padding:30px;border-radius:15px;box-shadow:0px 15px 20px rgba(0,0,0,0.1);}
+.wrapper .title-text{display:flex;width:200%;}
+.wrapper .title{width:50%;font-size:35px;font-weight:600;text-align:center;transition:all 0.6s;}
+.wrapper .slide-controls{position:relative;display:flex;height:50px;width:100%;overflow:hidden;margin:30px 0 10px 0;justify-content:space-between;border:1px solid lightgrey;border-radius:15px;}
+.slide-controls .slide{height:100%;width:100%;color:#fff;font-size:18px;font-weight:500;text-align:center;line-height:48px;cursor:pointer;z-index:1;}
+.slide-controls label.signup{color:#000;}
+.slide-controls .slider-tab{position:absolute;height:100%;width:50%;left:0;z-index:0;border-radius:15px;background:-webkit-linear-gradient(left,#003366,#004080,#0059b3,#0073e6);}
+input[type="radio"]{display:none;}
+#signup:checked ~ .slider-tab{left:50%;}
+#signup:checked ~ label.signup{color:#fff;cursor:default;}
+#login:checked ~ label.signup{color:#000;}
+#login:checked ~ label.login{cursor:default;}
+.form-container{width:100%;overflow:hidden;}
+.form-container .form-inner{display:flex;width:200%;}
+form{width:50%;transition:all 0.6s;}
+form .field{height:50px;width:100%;margin-top:20px;}
+form .field input, form .field select{height:100%;width:100%;outline:none;padding-left:15px;border-radius:15px;border:1px solid lightgrey;font-size:17px;}
+form .field input:focus, form .field select:focus{border-color:#1a75ff;}
+form .field input::placeholder{color:#999;}
+form .btn{height:50px;width:100%;border-radius:15px;position:relative;overflow:hidden;margin-top:20px;}
+form .btn .btn-layer{height:100%;width:300%;position:absolute;left:-100%;background:-webkit-linear-gradient(right,#003366,#004080,#0059b3,#0073e6);border-radius:15px;}
+form .btn:hover .btn-layer{left:0;}
+form .btn input[type="submit"]{height:100%;width:100%;z-index:1;position:relative;background:none;border:none;color:#fff;border-radius:15px;font-size:20px;font-weight:500;cursor:pointer;}
+.error{color:red;margin-top:10px;font-size:14px;}
+.success{color:green;margin-top:10px;font-size:14px;}
+</style>
+</head>
+<body>
+<div class="wrapper">
+  <div class="title-text">
+    <div class="title login">Login Form</div>
+    <div class="title signup">Signup Form</div>
+  </div>
+  <div class="form-container">
+    <div class="slide-controls">
+      <input type="radio" name="slide" id="login" checked>
+      <input type="radio" name="slide" id="signup">
+      <label for="login" class="slide login">Login</label>
+      <label for="signup" class="slide signup">Signup</label>
+      <div class="slider-tab"></div>
+    </div>
+    <div class="form-inner">
+      <!-- Login Form -->
+      <form id="loginForm" class="login">
+        <div class="field">
+          <input type="email" id="loginEmail" placeholder="Email Address" required autocomplete="email">
+        </div>
+        <div class="field">
+          <input type="password" id="loginPassword" placeholder="Password" required autocomplete="new-password">
+        </div>
+        <div class="field btn">
+          <div class="btn-layer"></div>
+          <input type="submit" value="Login">
+        </div>
+        <div class="error" id="loginError"></div>
+      </form>
+      <!-- Signup Form -->
+      <form id="signupForm" class="signup">
+        <div class="field"><input type="email" id="signupEmail" placeholder="Email Address" required autocomplete="email"></div>
+        <div class="field"><input type="password" id="signupPassword" placeholder="Password" required autocomplete="new-password"></div>
+        <div class="field">
+          <select id="signupRole" required>
+            <option value="">Select Role</option>
+            <option value="admin">Admin</option>
+            <option value="viewer">Viewer</option>
+          </select>
+        </div>
+        <div class="field admin-key-field" style="display:none;">
+          <input type="password" id="signupAdminKey" placeholder="Admin Key">
+        </div>
+        <div class="field btn">
+          <div class="btn-layer"></div>
+          <input type="submit" value="Signup">
+        </div>
+        <div class="error" id="signupError"></div>
+        <div class="success" id="signupSuccess"></div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+const loginText = document.querySelector(".title-text .login");
+const loginForm = document.querySelector("form.login");
+const loginBtn = document.querySelector("label.login");
+const signupBtn = document.querySelector("label.signup");
+
+// Slide toggle
+signupBtn.onclick = ()=>{
+    loginForm.style.marginLeft = "-50%";
+    loginText.style.marginLeft = "-50%";
+}
+loginBtn.onclick = ()=>{
+    loginForm.style.marginLeft = "0%";
+    loginText.style.marginLeft = "0%";
+}
+
+// Firebase Config
+const firebaseConfig = {
+  apiKey: "AIzaSyA2OJwHZyZyfS4eYq_47XCZxfW3JGNg09o",
+  authDomain: "truckdashboard-9ac2b.firebaseapp.com",
+  databaseURL: "https://truckdashboard-9ac2b-default-rtdb.firebaseio.com",
+  projectId: "truckdashboard-9ac2b",
+  storageBucket: "truckdashboard-9ac2b.appspot.com",
+  messagingSenderId: "453756964395",
+  appId: "1:453756964395:web:ff275651937a999f32246e",
+  measurementId: "G-G2N6CD69TS"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.database();
+auth.setPersistence(firebase.auth.Auth.Persistence.SESSION);
+
+// Show Admin Key only if role is admin
+document.getElementById("signupRole").addEventListener("change", function(){
+    const role = this.value;
+    const adminKeyField = document.querySelector(".admin-key-field");
+    adminKeyField.style.display = (role === "admin") ? "block" : "none";
+});
+
+// Signup
+document.getElementById("signupForm").addEventListener("submit", (e)=>{
+  e.preventDefault();
+  const email = document.getElementById("signupEmail").value;
+  const password = document.getElementById("signupPassword").value;
+  const role = document.getElementById("signupRole").value;
+  const signupError = document.getElementById("signupError");
+  const signupSuccess = document.getElementById("signupSuccess");
+  signupError.textContent = "";
+  signupSuccess.textContent = "";
+
+  if(!role){
+    signupError.textContent = "Please select a role.";
+    return;
+  }
+  if(role === "admin"){
+    const adminKey = document.getElementById("signupAdminKey").value.trim();
+    if(adminKey !== "9826"){
+      signupError.textContent = "Invalid Admin Key.";
+      return;
+    }
+  }
+
+  auth.createUserWithEmailAndPassword(email,password)
+  .then(cred=>{
+    return db.ref("users/"+cred.user.uid).set({ email, role });
+  })
+  .then(()=>{
+    signupSuccess.textContent = "Signup successful! You can login now.";
+    document.getElementById("signupForm").reset();
+    document.querySelector(".admin-key-field").style.display = "none";
+  })
+  .catch(err=>signupError.textContent = err.message);
+});
+
+// Login
+document.getElementById("loginForm").addEventListener("submit", (e)=>{
+  e.preventDefault();
+  const email = document.getElementById("loginEmail").value;
+  const password = document.getElementById("loginPassword").value;
+  const loginError = document.getElementById("loginError");
+  loginError.textContent = "";
+
+  auth.signInWithEmailAndPassword(email,password)
+  .then(cred=>{
+    return db.ref("users/"+cred.user.uid).once("value").then(snapshot=>{
+      const role = snapshot.val()?.role || "viewer";
+      
+      // Store login info for dashboard
+      localStorage.setItem("userEmail", email);
+      localStorage.setItem("userRole", role);
+      localStorage.setItem("userAvatar", "images/default-avatar.png"); // default avatar path
+
+      window.location.href = "dashboard.html";
+    });
+  })
+  .catch(err=>{
+    console.error(err);
+    loginError.textContent = "Invalid Login Credentials";
+  });
+});
+</script>
+</body>
+</html>

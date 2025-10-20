@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>User Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+body {
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+    background: #f4f7fb;
+}
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #000f48;
+    color: #fff;
+    padding: 15px 30px;
+}
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.avatar {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid white;
+}
+.user-role {
+    font-weight: 600;
+}
+.user-role.admin {
+    color: gold;
+}
+.user-role.viewer {
+    color: #4da6ff;
+}
+header button {
+    padding: 8px 16px;
+    background: #ff4d4d;
+    border: none;
+    border-radius: 6px;
+    color: #fff;
+    font-size: 15px;
+    cursor: pointer;
+}
+header button:hover {
+    background: #e60000;
+}
+.dashboard-container {
+    max-width: 800px;
+    margin: 40px auto;
+    padding: 20px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+}
+.dashboard-container h2 {
+    margin-bottom: 30px;
+    color: #000f48;
+    text-align: center;
+}
+.stats-box {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid #ccc;
+    border-radius: 12px;
+    padding: 15px 20px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    cursor: pointer;
+    position: relative;
+    transition: 0.3s;
+}
+.stats-box:hover {
+    box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+}
+.stats-box h3 {
+    margin: 0;
+    font-size: 18px;
+    color: #000f48;
+}
+.stats-box .icon {
+    font-size: 18px;
+    color: #003366;
+    transition: transform 0.3s;
+}
+.dropdown {
+    display: none;
+    flex-direction: column;
+    position: absolute;
+    top: 105%;
+    left: 0;
+    right: 0;
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    box-shadow: 0 6px 14px rgba(0,0,0,0.15);
+    z-index: 10;
+}
+.dropdown button {
+    padding: 12px;
+    background: none;
+    border: none;
+    text-align: left;
+    cursor: pointer;
+    font-size: 15px;
+}
+.dropdown button:hover {
+    background: #f0f0f0;
+}
+.hidden {
+    display: none;
+}
+.form-page, .history-page {
+    margin-top: 25px;
+    padding: 20px;
+    border-radius: 10px;
+    background: #f9f9f9;
+}
+.form-page input, .form-page select {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+}
+.form-page button {
+    padding: 12px 18px;
+    background: #000f48;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+.form-page button:hover {
+    background: #51CFED;
+}
+.search-box {
+    margin-bottom: 15px;
+}
+.search-box input {
+    width: 100%;
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+}
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+th, td {
+    border: 1px solid #ccc;
+    padding: 12px;
+    text-align: left;
+}
+th {
+    background: #000f48;
+    color: #fff;
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="user-info" id="userInfo">
+    <img id="userAvatar" src="images/default-avatar.png" alt="User Avatar" class="avatar">
+    <span id="userRole" class="user-role">Role</span>
+    <span id="userEmail">email@example.com</span>
+  </div>
+  <button id="logoutBtn">Logout</button>
+</header>
+
+<div class="dashboard-container">
+    <h2 style="font-weight:900; text-align:center; color:#222;">
+  <img src="img/dashboard-icon.png" alt="Dashboard Icon" 
+       style="width:35px; height:35px; vertical-align:middle; margin-right:10px;">
+  <strong>WELCOME TO BULDIT BROTHERS DASHBOARD</strong>
+</h2>
+
+    <div class="stats-box" id="statsBox">
+        <h3 style="display: flex; align-items: center; gap: 8px;">
+            <img src="img/stats-icon.png" alt="Stats Icon" style="width: 24px; height: 24px;">
+             Stats
+        </h3>
+
+        <span class="icon">▼</span>
+        <div class="dropdown" id="statsDropdown">
+            <button id="applyBtn">Apply</button>
+            <button id="historyBtn">Application History</button>
+        </div>
+    </div>
+
+    <div class="form-page hidden" id="applyPage">
+        <h3>Apply for Truck Clearance</h3>
+        <input type="text" id="truckNumber" placeholder="Truck Number" required>
+
+        <!-- Consignment Dropdown -->
+        <select id="consignment" required>
+            <option value="" disabled selected>Select Consignment</option>
+            <option value="Bravo Family Investment Co. Ltd">Bravo Family Investment Co. Ltd</option>
+            <option value="Betesb Trading Co. Ltd">Betesb Trading Co. Ltd</option>
+            <option value="Kahsay & Sons General Trading Co Ltd">Kahsay & Sons General Trading Co Ltd</option>
+            <option value="Hiyabyei Investments Co. Ltd">Hiyabyei Investments Co. Ltd</option>
+            <option value="Scope General Trading Co. Ltd">Scope General Trading Co. Ltd</option>
+        </select>
+
+        <input type="text" id="item" placeholder="Item" required>
+        <button id="submitApplication">Submit Application</button>
+    </div>
+
+    <div class="history-page hidden" id="historyPage">
+        <h3>Application History</h3>
+        <div class="search-box">
+            <input type="text" id="searchTruck" placeholder="Search by Truck Number">
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Truck Number</th>
+                    <th>Consignment</th>
+                    <th>Item</th>
+                </tr>
+            </thead>
+            <tbody id="historyTable"></tbody>
+        </table>
+    </div>
+    <h2> <a href="index.html">HOME</a></h2>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+<script>
+// --- USER INFO ---
+const userAvatar = document.getElementById("userAvatar");
+const userRoleSpan = document.getElementById("userRole");
+const userEmailSpan = document.getElementById("userEmail");
+
+const userEmail = localStorage.getItem("userEmail") || "guest@email.com";
+const userRole = (localStorage.getItem("userRole") || "viewer").toLowerCase();
+const userPhoto = localStorage.getItem("userPhoto") || "images/default-avatar.png";
+
+userEmailSpan.textContent = userEmail;
+userRoleSpan.textContent = userRole.charAt(0).toUpperCase() + userRole.slice(1);
+userAvatar.src = userPhoto;
+
+if(userRole === "admin") userRoleSpan.classList.add("admin");
+else userRoleSpan.classList.add("viewer");
+
+// --- LOGOUT ---
+document.getElementById("logoutBtn").addEventListener("click", () => {
+    localStorage.clear();
+    window.location.href = "login.html";
+});
+
+// --- STATS DROPDOWN ---
+const statsBox = document.getElementById("statsBox");
+const statsDropdown = document.getElementById("statsDropdown");
+const icon = statsBox.querySelector(".icon");
+
+statsBox.addEventListener("click", () => {
+    const isVisible = statsDropdown.style.display === "flex";
+    statsDropdown.style.display = isVisible ? "none" : "flex";
+    statsDropdown.style.flexDirection = "column";
+    icon.style.transform = isVisible ? "rotate(0deg)" : "rotate(180deg)";
+});
+
+// --- PAGES ---
+const applyBtn = document.getElementById("applyBtn");
+const historyBtn = document.getElementById("historyBtn");
+const applyPage = document.getElementById("applyPage");
+const historyPage = document.getElementById("historyPage");
+const submitApplication = document.getElementById("submitApplication");
+const historyTable = document.getElementById("historyTable");
+const searchTruck = document.getElementById("searchTruck");
+
+if(userRole === "viewer") applyBtn.style.display = "none";
+
+const stages = ["Verification", "Tax Payment", "Inspection", "Release", "Jebel", "Exited"];
+let applications = [];
+
+// --- FIREBASE ---
+const firebaseConfig = {
+    apiKey: "AIzaSyA2OJwHZyZyfS4eYq_47XCZxfW3JGNg09o",
+    authDomain: "truckdashboard-9ac2b.firebaseapp.com",
+    databaseURL: "https://truckdashboard-9ac2b-default-rtdb.firebaseio.com/",
+    projectId: "truckdashboard-9ac2b",
+    storageBucket: "truckdashboard-9ac2b.appspot.com",
+    messagingSenderId: "453756964395",
+    appId: "1:453756964395:web:ff275651937a999f32246e",
+    measurementId: "G-G2N6CD69TS"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+// --- SUBMIT APPLICATION ---
+submitApplication.addEventListener("click", () => {
+    const truckNumber = document.getElementById("truckNumber").value.trim();
+    const consignment = document.getElementById("consignment").value;
+    const item = document.getElementById("item").value.trim();
+
+    if(truckNumber && consignment && item){
+        const newAppRef = db.ref("applications").push();
+        newAppRef.set({
+            truckNumber: truckNumber,
+            consignment: consignment,
+            item: item,
+            stage: "Verification",
+            timestamp: Date.now()
+        }, error => {
+            if(!error){
+                alert("Application Submitted!");
+                document.getElementById("truckNumber").value = "";
+                document.getElementById("consignment").value = "";
+                document.getElementById("item").value = "";
+            } else {
+                alert("Error: " + error);
+            }
+        });
+    } else {
+        alert("Please fill all fields.");
+    }
+});
+
+// --- HISTORY ---
+function renderHistory(){
+    historyTable.innerHTML = "";
+    db.ref("applications").once("value", snapshot => {
+        let apps = [];
+        snapshot.forEach(childSnapshot => {
+            apps.push({ id: childSnapshot.key, ...childSnapshot.val() });
+        });
+        applications = apps.sort((a,b) => b.timestamp - a.timestamp);
+        displayFilteredHistory(applications);
+    });
+}
+
+function displayFilteredHistory(list){
+    historyTable.innerHTML = "";
+    const filterText = searchTruck.value.trim().toLowerCase();
+    list.forEach(truck => {
+        if(truck.truckNumber.toLowerCase().includes(filterText)){
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                <td style="display:flex; align-items:center;">
+                    ${truck.truckNumber}
+                    <span style="background:darkblue;color:white;padding:2px 5px;border-radius:5px;font-size:12px;margin-left:10px;">
+                        ${truck.stage}
+                    </span>
+                </td>
+                <td>${truck.consignment}</td>
+                <td>${truck.item}</td>
+            `;
+            // ADMIN CLICK TO NEXT STAGE
+if(userRole === "admin"){
+    row.style.cursor = "pointer";
+    row.addEventListener("click", () => {
+        const userInput = prompt();
+        if(userInput && userInput.trim().toUpperCase() === "OK"){
+            const currentStageIndex = stages.indexOf(truck.stage);
+            if(currentStageIndex < stages.length - 1){
+                const nextStage = stages[currentStageIndex + 1];
+                db.ref("applications/" + truck.id).update({ stage: nextStage }).then(() => {
+                    alert(`Truck ${truck.truckNumber} moved to stage: ${nextStage}`);
+                    renderHistory();
+
+                    // Auto-send email on exit
+                    if(nextStage === "Exited"){
+                        const emailMapping = {
+                            "Bravo Family Investment Co. Ltd": "tesfayedemessie9@gmail.com",
+                            "Betesb Trading Co. Ltd": "tesfayedemessie9@gmail.com",
+                            "Kahsay & Sons General Trading Co Ltd": "tesfayedemessie9@gmail.com",
+                            "Hiyabyei Investments Co. Ltd": "hiyabyeiinvestmen@gmail.com",
+                            "Scope General Trading Co. Ltd": "anyangbulmadong@gmail.com"
+                        };
+                        const email = emailMapping[truck.consignment] || "aliercholalier29@gmail.com";
+
+                        const emailForm = document.createElement("form");
+                        emailForm.method = "POST";
+                        emailForm.action = `https://formsubmit.co/${email}`;
+
+                        ["Truck Number","Consignment","Item","Message"].forEach(field => {
+                            const input = document.createElement("input");
+                            input.type = "hidden";
+                            input.name = field;
+                            if(field === "Truck Number") input.value = truck.truckNumber;
+                            else if(field === "Consignment") input.value = truck.consignment;
+                            else if(field === "Item") input.value = truck.item;
+                            else input.value = `Hello! Your Truck ${truck.truckNumber} carrying ${truck.item} has successfully exited Nimule Boarder. Thank you for using Buldit Brothers Co. Ltd`;
+                            emailForm.appendChild(input);
+                        });
+
+                        document.body.appendChild(emailForm);
+                        emailForm.submit();
+                    }
+                });
+            } else alert("This truck has completed all stages.");
+        } else {
+            alert('Stage not updated. Type "OK" to confirm.');
+        }
+    });
+}
+
+            historyTable.appendChild(row);
+        }
+    });
+}
+
+searchTruck.addEventListener("input", () => {
+    displayFilteredHistory(applications);
+});
+
+// --- DROPDOWN PAGE TOGGLE ---
+applyBtn.addEventListener("click", e => {
+    e.stopPropagation();
+    applyPage.classList.remove("hidden");
+    historyPage.classList.add("hidden");
+    statsDropdown.style.display = "none";
+    icon.style.transform = "rotate(0deg)";
+});
+historyBtn.addEventListener("click", e => {
+    e.stopPropagation();
+    historyPage.classList.remove("hidden");
+    applyPage.classList.add("hidden");
+    statsDropdown.style.display = "none";
+    icon.style.transform = "rotate(0deg)";
+    renderHistory();
+});
+</script>
+
+</body>
+</html>
