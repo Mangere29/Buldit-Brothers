@@ -360,20 +360,20 @@ function displayFilteredHistory(list){
                 <td>${truck.item}</td>
             `;
             // ADMIN CLICK TO NEXT STAGE
-if(userRole === "admin"){
+if (userRole === "admin") {
     row.style.cursor = "pointer";
     row.addEventListener("click", () => {
         const userInput = prompt();
-        if(userInput && userInput.trim().toUpperCase() === "OK"){
+        if (userInput && userInput.trim().toUpperCase() === "OK") {
             const currentStageIndex = stages.indexOf(truck.stage);
-            if(currentStageIndex < stages.length - 1){
+            if (currentStageIndex < stages.length - 1) {
                 const nextStage = stages[currentStageIndex + 1];
                 db.ref("applications/" + truck.id).update({ stage: nextStage }).then(() => {
                     alert(`Truck ${truck.truckNumber} moved to stage: ${nextStage}`);
                     renderHistory();
 
-                    // Auto-send email on exit
-                    if(nextStage === "Exited"){
+                    // ✅ Auto-send email when truck is Exited
+                    if (nextStage === "Exited") {
                         const emailMapping = {
                             "Bravo Family Investment Co. Ltd": "tesfayedemessie9@gmail.com",
                             "Betesb Trading Co. Ltd": "tesfayedemessie9@gmail.com",
@@ -381,35 +381,42 @@ if(userRole === "admin"){
                             "Hiyabyei Investments Co. Ltd": "hiyabyeiinvestmen@gmail.com",
                             "Scope General Trading Co. Ltd": "anyangbulmadong@gmail.com"
                         };
+
                         const email = emailMapping[truck.consignment] || "aliercholalier29@gmail.com";
 
-                        const emailForm = document.createElement("form");
-                        emailForm.method = "POST";
-                        emailForm.action = `https://formsubmit.co/${email}`;
+                        const formData = new FormData();
+                        formData.append("Truck Number", truck.truckNumber);
+                        formData.append("Consignment", truck.consignment);
+                        formData.append("Item", truck.item);
+                        formData.append("Message", `Hello! Your Truck ${truck.truckNumber} carrying ${truck.item} has successfully exited Nimule Border. Thank you for using Buldit Brothers Co. Ltd.`);
+                        formData.append("_captcha", "false");
+                        formData.append("_domain", "bulditbrothersco.ltd");
 
-                        ["Truck Number","Consignment","Item","Message"].forEach(field => {
-                            const input = document.createElement("input");
-                            input.type = "hidden";
-                            input.name = field;
-                            if(field === "Truck Number") input.value = truck.truckNumber;
-                            else if(field === "Consignment") input.value = truck.consignment;
-                            else if(field === "Item") input.value = truck.item;
-                            else input.value = `Hello! Your Truck ${truck.truckNumber} carrying ${truck.item} has successfully exited Nimule Boarder. Thank you for using Buldit Brothers Co. Ltd`;
-                            emailForm.appendChild(input);
-                        });
-
-                        document.body.appendChild(emailForm);
-                        emailForm.submit();
+                        fetch(`https://formsubmit.co/${email}`, {
+                            method: "POST",
+                            body: formData
+                        })
+                        .then(res => {
+                            if (res.ok) {
+                                console.log(`✅ Email sent successfully to ${email}`);
+                            } else {
+                                console.error("⚠️ Email failed to send. Check FormSubmit settings.");
+                            }
+                        })
+                        .catch(err => console.error("❌ Network error:", err));
                     }
                 });
-            } else alert("This truck has completed all stages.");
+            } else {
+                alert("This truck has completed all stages.");
+            }
         } else {
             alert('Stage not updated. Type "OK" to confirm.');
         }
     });
 }
 
-            historyTable.appendChild(row);
+historyTable.appendChild(row);
+
         }
     });
 }
